@@ -1,10 +1,11 @@
 #!/bin/bash
 
-IOS_PROJECT_PATH="Build/iOS"
-WORKSPACE_PATH="Build/Framework"
-FRAMEWORK_OUTPUT_PATH="./Frameworks"
+# パス設定
+IOS_PROJECT_PATH="Build/iOS"  # iOSプロジェクトのパス
+FRAMEWORK_OUTPUT_PATH="$IOS_PROJECT_PATH/build"  # フレームワークのビルド出力パス
+FINAL_OUTPUT_PATH="./Frameworks"  # 最終的なフレームワーク/xcframeworkの出力先パス
 
- Clean and build the iOS framework
+# iOSフレームワークのクリーンビルド
 xcodebuild -project "$IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
     -scheme UnityFramework \
     -configuration Release \
@@ -12,12 +13,33 @@ xcodebuild -project "$IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
     BUILD_DIR="$FRAMEWORK_OUTPUT_PATH" \
     clean build
 
-# Copy the framework to a specific location
-cp -R "$IOS_PROJECT_PATH/framework/$WORKSPACE_PATH/Release-iphoneos/UnityFramework.framework" "$FRAMEWORK_OUTPUT_PATH/UnityFramework.framework"
-
+# ビルドが成功したかどうかを確認
 if [ $? -ne 0 ]; then
     echo "Framework build failed"
     exit 1
 fi
 
-echo "iOS Framework built at $FRAMEWORK_OUTPUT_PATH/UnityFramework.framework"
+# フレームワークをコピー
+cp -R "$FRAMEWORK_OUTPUT_PATH/Release-iphoneos/UnityFramework.framework" "$FINAL_OUTPUT_PATH/UnityFramework.framework"
+
+# コピーが成功したかどうかを確認
+if [ $? -ne 0 ]; then
+    echo "Failed to copy framework to $FINAL_OUTPUT_PATH"
+    exit 1
+fi
+
+echo "iOS Framework built and copied to $FINAL_OUTPUT_PATH/UnityFramework.framework"
+
+# xcframeworkの作成
+xcodebuild -create-xcframework \
+    -framework "$FINAL_OUTPUT_PATH/UnityFramework.framework" \
+    -output "$FINAL_OUTPUT_PATH/UnityFramework.xcframework"
+
+# xcframeworkの作成が成功したかどうかを確認
+if [ $? -ne 0 ]; then
+    echo "xcframework creation failed"
+    exit 1
+fi
+
+# 成功メッセージ
+echo "xcframework created at $FINAL_OUTPUT_PATH/UnityFramework.xcframework"
