@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # パス設定
-IOS_PROJECT_PATH="Build/iOS"  # iOSプロジェクトのパス
-FRAMEWORK_OUTPUT_PATH="$IOS_PROJECT_PATH/build"  # フレームワークのビルド出力パス
+IOS_PROJECT_PATH="./Build/iOS"  # iOSプロジェクトのパス
+FRAMEWORK_OUTPUT_PATH="$IOS_PROJECT_PATH/Build"  # フレームワークのビルド出力パス
 FINAL_OUTPUT_PATH="./Frameworks"  # 最終的なフレームワーク/xcframeworkの出力先パス
 
 # iOSフレームワークのクリーンビルド
@@ -20,7 +20,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # フレームワークをコピー
-cp -R "$FRAMEWORK_OUTPUT_PATH/Release-iphoneos/UnityFramework.framework" "$FINAL_OUTPUT_PATH/UnityFramework.framework"
+cp -R "$FRAMEWORK_OUTPUT_PATH/Framework/Release-iphoneos/UnityFramework.framework" "$FINAL_OUTPUT_PATH/UnityFramework.framework"
 
 # コピーが成功したかどうかを確認
 if [ $? -ne 0 ]; then
