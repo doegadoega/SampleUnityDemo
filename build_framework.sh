@@ -1,9 +1,10 @@
 #!/bin/bash
 
 IOS_PROJECT_PATH="Build/iOS"
-FRAMEWORK_OUTPUT_PATH="Build/Framework"
+WORKSPACE_PATH="Build/Framework"
+FRAMEWORK_OUTPUT_PATH="./Frameworks"
 
-# Clean and build the iOS framework
+ Clean and build the iOS framework
 xcodebuild -project "$IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
     -scheme UnityFramework \
     -configuration Release \
@@ -12,7 +13,7 @@ xcodebuild -project "$IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
     clean build
 
 # Copy the framework to a specific location
-cp -R "$FRAMEWORK_OUTPUT_PATH/Release-iphoneos/UnityFramework.framework" "$FRAMEWORK_OUTPUT_PATH/UnityFramework.framework"
+cp -R "$IOS_PROJECT_PATH/framework/$WORKSPACE_PATH/Release-iphoneos/UnityFramework.framework" "$FRAMEWORK_OUTPUT_PATH/UnityFramework.framework"
 
 if [ $? -ne 0 ]; then
     echo "Framework build failed"
