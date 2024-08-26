@@ -14,7 +14,7 @@ public class BuildScript
             scenes = new[] { "Assets/Scenes/SampleScene.unity" }, // ビルドするシーンを指定
             locationPathName = buildPath,
             target = BuildTarget.iOS,
-            options = buildPlayerOptions. // ビルドオプションを指定
+            options = BuildOptions.None // ビルドオプションを指定
         };
 
         // ビルド実行

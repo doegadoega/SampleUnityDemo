@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
 using System.IO;
+using System.Text.RegularExpressions;
 
 public class XcodePostProcess
 {
@@ -18,13 +19,26 @@ public class XcodePostProcess
             // Main TargetのGUIDを取得
             string targetGuid = project.GetUnityMainTargetGuid();
 
+            // UnityFrameworkのターゲットGUIDを取得
+            string unityFrameworkTargetGuid = project.GetUnityFrameworkTargetGuid();
+
             // チームID（Team ID）を設定
             string teamID = "TCB82V84V5"; // ここにApple Developer Team IDを設定します
             project.SetBuildProperty(targetGuid, "DEVELOPMENT_TEAM", teamID);
+            project.SetBuildProperty(unityFrameworkTargetGuid, "DEVELOPMENT_TEAM", teamID);
 
-            // プロビジョニングプロファイルを設定する場合
-            // string provisioningProfile = "YOUR_PROVISIONING_PROFILE_UUID";
-            // project.SetBuildProperty(targetGuid, "PROVISIONING_PROFILE_SPECIFIER", provisioningProfile);
+            // ビットコードを無効にする
+            project.SetBuildProperty(unityFrameworkTargetGuid, "ENABLE_BITCODE", "NO");
+
+            // リンクフラグの設定
+            project.AddBuildProperty(unityFrameworkTargetGuid, "OTHER_LDFLAGS", "-ld64");
+
+            // NativeCallProxy.hをpublicに変更する
+            string projectContent = File.ReadAllText(projectPath);
+            string pattern = @"(\/\* NativeCallProxy\.h in Headers \*\/ = \{isa = PBXBuildFile; fileRef = .*?\/\* NativeCallProxy\.h \*\/; )};";
+            string replacement = @"$1settings = {ATTRIBUTES = (Public, ); }; };";
+            projectContent = Regex.Replace(projectContent, pattern, replacement, RegexOptions.Singleline);
+            File.WriteAllText(projectPath, projectContent);
 
             // Xcodeプロジェクトを保存
             project.WriteToFile(projectPath);

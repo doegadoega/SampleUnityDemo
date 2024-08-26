@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Unityのインストールパスとプロジェクトパス
-UNITY_PATH="/Applications/Unity/Hub/Editor/2022.3.33f1/Unity.app/Contents/MacOS/Unity"
-PROJECT_PATH="."
+UNITY_PATH="/Applications/2022.3.33f1/Unity.app/Contents/MacOS/Unity"
+PROJECT_PATH="./"
 
 # Unityプロジェクトのビルド実行
 $UNITY_PATH -quit -batchmode -projectPath "$PROJECT_PATH" -executeMethod BuildScript.BuildIOS
