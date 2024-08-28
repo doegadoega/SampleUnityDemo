@@ -14,7 +14,7 @@ let package = Package(
     targets: [
         .binaryTarget(
             name: "UnityFramework",
-            path: "./Frameworks/UnityFramework.framework"
+            path: "./Frameworks/UnityFramework.xcframework"
         )
     ]
 )
