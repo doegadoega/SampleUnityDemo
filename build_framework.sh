@@ -1,63 +1,40 @@
 #!/bin/bash
 
 # パス設定
-IOS_PROJECT_PATH="./Build/iOS"  # iOSプロジェクトのパス
-FRAMEWORK_OUTPUT_PATH="$IOS_PROJECT_PATH/Build"  # フレームワークのビルド出力パス
-FINAL_OUTPUT_PATH="./Frameworks"  # 最終的なフレームワーク/xcframeworkの出力先パス
+FRAMEWORK_OUTPUT_PATH="./Build/Frameworks"  # フレームワークのビルド出力パス
+FINAL_OUTPUT_PATH="./Frameworks/UnityFramework.xcframework"  # 最終的なフレームワーク/xcframeworkの出力先パス
 
-# iOSフレームワークのクリーンビルド
-#xcodebuild -project "$IOS_PROJECT_PATH/Unity-iPhone.xcodeproj" \
-#    -scheme UnityFramework \
-#    -configuration Release \
-#    -sdk iphoneos \
-#    BUILD_DIR="$FRAMEWORK_OUTPUT_PATH" \
-#    clean build
+PROJECT_PATH="."
+OUTPUT_PATH="${PROJECT_PATH}/Builds"
+
+DEVICE_BUILD_PATH="${OUTPUT_PATH}/DeviceSDK/Unity-iPhone.xcodeproj"
+DEVICE_BUILD_ARCHIVE_PATH="${OUTPUT_PATH}/UnityFramework-Device.xcarchive"
+
+# 前回のビルド結果が残っている場合には先に削除
+rm -rfv ${DEVICE_BUILD_ARCHIVE_PATH}
 
 # device向けのframeworkをarchive
-xcodebuild archive -project Unity-iPhone.xcodeproj
-    -scheme UnityFramework \
-    -destination 'generic/platform=iOS' \
-    -archivePath "UnityFramework-Device" \
-    SKIP_INSTALL=NO \
-    BUILD_LIBRARY_FOR_DISTRIBUTION=YES
-    
-# simulator向けのframeworkをarchive
-xcodebuild archive -project Unity-iPhone-for-Simulator.xcodeproj
-    -scheme UnityFramework \
-    -destination 'generic/platform=iOS Simulator' \
-    -archivePath "UnityFramework-Simulator" \
-    SKIP_INSTALL=NO \
-    BUILD_LIBRARY_FOR_DISTRIBUTION=YES
-    
-# device向け / simulator向けのframeworkからxcframeworkを生成
-xcodebuild -create-xcframework \
-  -framework UnityFramework-Device.xcarchive/Products/Library/Frameworks/UnityFramework.framework \
-  -framework UnityFramework-Simulator.xcarchive/Products/Library/Frameworks/UnityFramework.framework \
-  -output UnityFramework.xcframework
-
-clean build
+xcodebuild archive \
+   -project "$DEVICE_BUILD_PATH" \
+   -scheme UnityFramework \
+   -destination 'generic/platform=iOS' \
+   -archivePath "$DEVICE_BUILD_ARCHIVE_PATH" \
+   SKIP_INSTALL=NO \
+   BUILD_LIBRARY_FOR_DISTRIBUTION=YES
 
 # ビルドが成功したかどうかを確認
 if [ $? -ne 0 ]; then
-    echo "Framework build failed"
-    exit 1
+   echo "Device framework archive failed"
+   exit 1
 fi
 
-# フレームワークをコピー
-cp -R "$FRAMEWORK_OUTPUT_PATH/Framework/Release-iphoneos/UnityFramework.framework" "$FINAL_OUTPUT_PATH/UnityFramework.framework"
+# 削除
+rm -rfv ${FINAL_OUTPUT_PATH}
 
-# コピーが成功したかどうかを確認
-if [ $? -ne 0 ]; then
-    echo "Failed to copy framework to $FINAL_OUTPUT_PATH"
-    exit 1
-fi
-
-echo "iOS Framework built and copied to $FINAL_OUTPUT_PATH/UnityFramework.framework"
-
-# xcframeworkの作成
+# device向け / simulator向けのframeworkからxcframeworkを生成
 xcodebuild -create-xcframework \
-    -framework "$FINAL_OUTPUT_PATH/UnityFramework.framework" \
-    -output "$FINAL_OUTPUT_PATH/UnityFramework.xcframework"
+  -framework "$DEVICE_BUILD_ARCHIVE_PATH/Products/Library/Frameworks/UnityFramework.framework" \
+  -output "${FINAL_OUTPUT_PATH}"
 
 # xcframeworkの作成が成功したかどうかを確認
 if [ $? -ne 0 ]; then
@@ -65,5 +42,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 成功メッセージ
-echo "xcframework created at $FINAL_OUTPUT_PATH/UnityFramework.xcframework"
+return 0

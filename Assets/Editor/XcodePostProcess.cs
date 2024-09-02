@@ -33,6 +33,21 @@ public class XcodePostProcess
             // リンクフラグの設定
             project.AddBuildProperty(unityFrameworkTargetGuid, "OTHER_LDFLAGS", "-ld64");
 
+            // シミュレーター用か実機用かを判断する
+            string sdk = project.GetBuildPropertyForConfig(targetGuid, "SDKROOT");
+            bool isSimulator = sdk.Contains("iphonesimulator");
+
+            // NOTE: iOS Simulatorのエラー対策
+            if (PlayerSettings.iOS.sdkVersion == iOSSdkVersion.SimulatorSDK)
+            {
+                var removeLdFlags = new[]
+                {
+                    "-Wl,-undefined,dynamic_lookup",
+                    "-Wl,-exported_symbol,_il2cpp_*"
+                };
+                project.UpdateBuildProperty(targetGuid, "OTHER_LDFLAGS", new string[] { }, removeLdFlags);
+            }
+
             // NativeCallProxy.hをpublicに変更する
             string projectContent = File.ReadAllText(projectPath);
             string pattern = @"(\/\* NativeCallProxy\.h in Headers \*\/ = \{isa = PBXBuildFile; fileRef = .*?\/\* NativeCallProxy\.h \*\/; )};";
